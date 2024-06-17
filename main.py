@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
-
+import datetime as dt
 from PIL import Image
 from pycaret.classification import load_model
+from pathlib import Path
 
 st.set_page_config(
     page_title="Endoscopic intervention prediction",
@@ -65,25 +66,37 @@ def user_input_features():
     return features
 
 df = user_input_features()
-# st.write(df)
 
 # loading in the model to predict on the data
 final_lda = load_model('abstract model')
+myfile = Path('./datacollect.csv')
 
-predict_value = final_lda.predict(df)
-prob = final_lda.predict_proba(df)
-
-
-if df.Age.to_numpy() == 0 or df.Alb.to_numpy() == 0:
-    st.subheader('Please insert the patient data')
-else:
-    if predict_value == 0:
-        rimage = Image.open('GIBleed.jfif')
-        st.subheader('Result: No need for endoscopic intervention with probability '+ str("{:.2f}".format(prob[0][0]*100)) +'%')
-    elif predict_value == 1:
-        rimage = Image.open('Logo.png')
-        st.subheader('Result: Need for endoscopic intervention with probability ' + str("{:.2f}".format(prob[0][1]*100)) +'%')
+if st.sidebar.button('Predict'):
+#    st.write('click')
+    if df.eq(0).any().any():
+        st.write('Please fill all the data')
     else:
-        print('ERROR')
+#       st.write('Ready for prediction')
+        predict_value = final_lda.predict(df)
+        prob = final_lda.predict_proba(df)
+        if predict_value == 0:
+            rimage = Image.open('GIBleed.jfif')
+            st.subheader('Result: No need for endoscopic intervention with probability '+ str("{:.2f}".format(prob[0][0]*100)) +'%')
+        elif predict_value == 1:
+            rimage = Image.open('Logo.png')
+            st.subheader('Result: Need for endoscopic intervention with probability ' + str("{:.2f}".format(prob[0][1]*100)) +'%')
+        else:
+            print('ERROR')
 
- #   st.image(rimage.resize((200, 200)))
+    df['Timestamp'] = dt.datetime.now()
+    df['predicted value'] = predict_value
+    df['prob for negative class'] = prob[0][0]
+    df['prob for positive class'] = prob[0][1]
+
+    if myfile.is_file():
+        st.write('file existed')
+        df.to_csv('datacollect.csv', mode='a', index=False, header=False)
+    else:
+        df.to_csv('datacollect.csv', index=False)
+
+#  #   st.image(rimage.resize((200, 200)))
