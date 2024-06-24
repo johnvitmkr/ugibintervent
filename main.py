@@ -33,6 +33,9 @@ st.image(image)
 
 # Sidebar
 st.sidebar.header('Input Parameters')
+
+hosp = st.sidebar.selectbox('Hospital',('Siriraj','Golden Jubilee','Rama','Nakornsawan'))
+
 def user_input_features():
 
     layout = st.sidebar.columns([1, 1])
@@ -88,15 +91,27 @@ if st.sidebar.button('Predict'):
         else:
             print('ERROR')
 
-    df['Timestamp'] = dt.datetime.now()
     df['predicted value'] = predict_value
     df['prob for negative class'] = prob[0][0]
     df['prob for positive class'] = prob[0][1]
 
+    outdf = pd.DataFrame([{'UTC Timestamp': dt.datetime.now(), 'Hospital': hosp}])
+    outdf = pd.concat([outdf, df], axis=1)
+
     if myfile.is_file():
         st.write('file existed')
-        df.to_csv('datacollect.csv', mode='a', index=False, header=False)
+        outdf.to_csv('datacollect.csv', mode='a', index=False, header=False)
     else:
-        df.to_csv('datacollect.csv', index=False)
+        outdf.to_csv('datacollect.csv', index=False)
 
 #  #   st.image(rimage.resize((200, 200)))
+
+if myfile.is_file():
+    collecteddf = pd.read_csv('datacollect.csv')
+
+    st.download_button(
+        label="Download CSV",
+        data=collecteddf.to_csv().encode("utf-8"),
+        file_name="collecteddata.csv",
+        mime="text/csv"
+    )
