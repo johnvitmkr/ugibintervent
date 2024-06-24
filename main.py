@@ -51,16 +51,16 @@ def user_input_features():
         Stool_type = st.selectbox("Stool type", ('Hematochezia','Maroon','Melena','Normal'))
         Onset = st.number_input('Time to presentation(hr)', 0)
         Resus_gr2 = st.radio("Resuscitation", ('No', 'Yes'), horizontal=True)
-
+    #input7 = st.number_input(‘ABC:’, value = 1.454, step = 0.001, format = "%0.3f")
     with layout[-1]:
         SBP = st.number_input('Systolic BP (mmHg)', 0)
         HR = st.number_input('Heart rate (bpm)', 0)
-        Hb = st.number_input('Hemoglobin level (g/dL)', 0.0)
+        Hb = st.number_input('Hemoglobin level (g/dL)', 0.0, step = 0.1, format = "%0.1f")
         Plt = st.number_input('Platelet count (x10^6/ml)', 0)
-        INR = st.number_input('INR', 0.00)
-        BUN = st.number_input('BUN (mg/dL)', 0.00)
-        Cr = st.number_input('Creatinine (mg/dL)', 0.1)
-        Alb = st.number_input('Albumin level (g/dL)', 0.0)
+        INR = st.number_input('INR', 0.0, step = 0.1, format = "%0.1f")
+        BUN = st.number_input('BUN (mg/dL)', 0.0, step = 0.1, format = "%0.1f")
+        Cr = st.number_input('Creatinine (mg/dL)', 0.1, step = 0.1, format = "%0.1f")
+        Alb = st.number_input('Albumin level (g/dL)', 0.0, step = 0.1, format = "%0.1f")
 
     data = {'Sex_gr': Sex_gr,'Age': Age, 'Cirrhosis_gr2': Cirrhosis_gr2,'CA_gr2':CA_gr2,'Medication_gr2': Medication_gr2, 'Hx UGIB_gr': HxUGIB_gr,'Onset': Onset, 'Resus_gr2': Resus_gr2,
              'Vomit type': Vomit_type,'Stool type': Stool_type,'SBP': SBP,'HR': HR, 'Hb':Hb, 'Plt':Plt*1000, 'INR': INR, 'Alb': Alb, 'BUN Cr': BUN/Cr}
@@ -75,11 +75,9 @@ final_lda = load_model('abstract model')
 myfile = Path('./datacollect.csv')
 
 if st.sidebar.button('Predict'):
-#    st.write('click')
     if df.eq(0).any().any():
         st.write('Please fill all the data')
     else:
-#       st.write('Ready for prediction')
         predict_value = final_lda.predict(df)
         prob = final_lda.predict_proba(df)
         if predict_value == 0:
